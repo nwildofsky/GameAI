@@ -8,6 +8,7 @@ public class Action
     WorldStateList preconditions;
     WorldStateList effects;
     int heuristic;
+    Behavior_Base behavior;
 
     public Action()
     {
@@ -15,10 +16,11 @@ public class Action
         effects = new WorldStateList();
         heuristic = 0;
     }
-    public Action(WorldStateList preconditions, WorldStateList effects, int heuristic = 0)
+    public Action(WorldStateList preconditions, WorldStateList effects, Behavior_Base behavior, int heuristic = 0)
     {
         this.preconditions = preconditions;
         this.effects = effects;
+        this.behavior = behavior;
         this.heuristic = heuristic;
     }
     public Action DeepCopy()
@@ -26,6 +28,7 @@ public class Action
         Action copy = new Action();
         copy.preconditions = this.preconditions.DeepCopy();
         copy.effects = this.effects.DeepCopy();
+        copy.behavior = this.behavior;
         copy.Previous = this.Previous;
         copy.Depth = this.Depth;
         copy.Heuristic = this.Heuristic;
@@ -40,6 +43,8 @@ public class Action
     { get => preconditions; }
     public WorldStateList Effects
     { get => effects; }
+    public Behavior_Base Behavior
+    { get => behavior; }
     public int Depth
     { get; set; }
     public int Heuristic

@@ -13,4 +13,9 @@ public class Goal
 
     public WorldStateList Requisites
     { get => requisites; }
+
+    public float CalculatePriority(ActionPlanner agent)
+    {
+        return 0;
+    }
 }
