@@ -66,17 +66,6 @@ public class Action
         return 0;
     }
 
-    public void ApplyEffects(ref WorldStateList worldState)
-    {
-        foreach(WorldState<object> effect in effects.states)
-        {
-            WorldState<object> cond = worldState.FindState(effect.Tag);
-
-            if (cond != null)
-                cond.State = effect.State;
-        }
-    }
-
     public override bool Equals(object obj)
     {
         if (obj == null)

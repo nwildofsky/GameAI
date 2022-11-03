@@ -6,9 +6,19 @@ using UnityEngine;
 [RequireComponent(typeof(Transform))]
 public class ActionPlanner : MonoBehaviour
 {
+    // Agent's accesible properties
     [NonSerialized]
     public Transform transform;
 
+    // Variables that determine each state
+    [Range(0, 3)]
+    public int startHappiness;
+    [Range(0, 2)]
+    public int startHunger;
+    [Range(0, 2)]
+    public int startMoney;
+
+    // Variables for goap action planning
     WorldStateList worldState;
     List<Action> actions;
     List<Goal> goals;
@@ -19,92 +29,164 @@ public class ActionPlanner : MonoBehaviour
     private void Awake()
     {
         worldState = new WorldStateList(
-            new WorldState<object>("enemyVisible", false),
-            new WorldState<object>("armedWithGun", true),
-            new WorldState<object>("weaponLoaded", false),
-            new WorldState<object>("enemyLinedUp", false),
-            new WorldState<object>("enemyAlive", true),
-            new WorldState<object>("armedWithBomb", true),
-            new WorldState<object>("nearEnemy", false),
-            new WorldState<object>("alive", true)
+            new WorldState<object>("happiness", startHappiness),
+            new WorldState<object>("hunger", startHunger),
+            new WorldState<object>("money", startMoney),
+            new WorldState<object>("bumpedInto", false),
+            new WorldState<object>("social", false)
         );
 
         actions = new List<Action>();
         goals = new List<Goal>();
 
-        // Scout
+        // Eat
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("armedWithGun", true)
+                new WorldState<object>("hunger", 2),
+                new WorldState<object>("money", 1)
             ),
             new WorldStateList(
-                new WorldState<object>("enemyVisible", true)
+                new WorldState<object>("hunger", 0),
+                new WorldState<object>("money", 0)
             ),
-            new BehaviorMove(new Vector3(0, 0.97f, 0), 2f)
+            new BehaviorEat()
         ));
-        // Approach
+        // Drink
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("enemyVisible", true)
+                new WorldState<object>("hunger", 1),
+                new WorldState<object>("money", 1),
+                new WorldState<object>("happiness", 0),
+                new WorldState<object>("social", false)
             ),
             new WorldStateList(
-                new WorldState<object>("nearEnemy", true)
+                new WorldState<object>("money", 0),
+                new WorldState<object>("happiness", 2)
             ),
-            new BehaviorMove(new Vector3(0, 0, 0), 2f)
+            new Behavior_Base()
         ));
-        // Aim
+        // Find Person
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("enemyVisible", true),
-                new WorldState<object>("weaponLoaded", true)
+                new WorldState<object>("social", false)
             ),
             new WorldStateList(
-                new WorldState<object>("enemyLinedUp", true)
+                new WorldState<object>("bumpedInto", true)
             ),
-            new BehaviorMove(new Vector3(5, 0, 5), 2f)
+            new Behavior_Base()
         ));
-        // Shoot
+        // Avoid
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("enemyLinedUp", true)
+                new WorldState<object>("bumpedInto", true),
+                new WorldState<object>("happiness", 0)
             ),
             new WorldStateList(
-                new WorldState<object>("enemyAlive", false)
+                new WorldState<object>("bumpedInto", false)
             ),
-            new BehaviorMove(new Vector3(5, 5, 5), 2f)
+            new Behavior_Base()
         ));
-        // Load
+        // Avoid 
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("armedWithGun", true)
+                new WorldState<object>("bumpedInto", true),
+                new WorldState<object>("happiness", 1)
             ),
             new WorldStateList(
-                new WorldState<object>("weaponLoaded", true)
+                new WorldState<object>("bumpedInto", false),
+                new WorldState<object>("happiness", 0)
             ),
-            new BehaviorMove(new Vector3(0, 0, 0), 2f)
+            new Behavior_Base()
         ));
-        // Detonate Bomb
+        // Socialize
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("armedWithBomb", true),
-                new WorldState<object>("nearEnemy", true)
+                new WorldState<object>("bumpedInto", true),
+                new WorldState<object>("happiness", 2)
             ),
             new WorldStateList(
-                new WorldState<object>("alive", false),
-                new WorldState<object>("enemyAlive", false)
+                new WorldState<object>("social", true),
+                new WorldState<object>("happiness", 3),
+                new WorldState<object>("hunger", 1)
             ),
-            new BehaviorMove(new Vector3(0, 0, 0), 2f)
+            new Behavior_Base()
         ));
-        // Flee
+        // Socialize
         actions.Add(new Action(
             new WorldStateList(
-                new WorldState<object>("enemyVisible", true)
+                new WorldState<object>("bumpedInto", true),
+                new WorldState<object>("happiness", 1)
             ),
             new WorldStateList(
-                new WorldState<object>("nearEnemy", false)
+                new WorldState<object>("social", false),
+                new WorldState<object>("happiness", 0)
             ),
-            new BehaviorMove(new Vector3(0, 0, 0), 2f)
+            new Behavior_Base()
         ));
+        // Time Alone
+        actions.Add(new Action(
+            new WorldStateList(
+                new WorldState<object>("happiness", 0)
+            ),
+            new WorldStateList(
+                new WorldState<object>("happiness", 1),
+                new WorldState<object>("hunger", 1),
+                new WorldState<object>("social", false)
+            ),
+            new Behavior_Base()
+        ));
+        // Shop
+        actions.Add(new Action(
+            new WorldStateList(
+                new WorldState<object>("money", 2),
+                new WorldState<object>("social", true)
+            ),
+            new WorldStateList(
+                new WorldState<object>("money", 0),
+                new WorldState<object>("happiness", 1)
+            ),
+            new Behavior_Base()
+        ));
+        // Work
+        actions.Add(new Action(
+            new WorldStateList(
+                new WorldState<object>("money", 0),
+                new WorldState<object>("happiness", 0)
+            ),
+            new WorldStateList(
+                new WorldState<object>("money", 1),
+                new WorldState<object>("hunger", 2),
+                new WorldState<object>("social", false)
+            ),
+            new Behavior_Base()
+        ));
+        // Work
+        actions.Add(new Action(
+            new WorldStateList(
+                new WorldState<object>("money", 0),
+                new WorldState<object>("happiness", 1)
+            ),
+            new WorldStateList(
+                new WorldState<object>("money", 2),
+                new WorldState<object>("happiness", 0),
+                new WorldState<object>("hunger", 1)
+            ),
+            new Behavior_Base()
+        ));
+        // Work
+        actions.Add(new Action(
+            new WorldStateList(
+                new WorldState<object>("money", 0),
+                new WorldState<object>("happiness", 2)
+            ),
+            new WorldStateList(
+                new WorldState<object>("money", 1),
+                new WorldState<object>("hunger", 2),
+                new WorldState<object>("social", true)
+            ),
+            new Behavior_Base()
+        ));
+
 
         goals.Add(new Goal(
             new WorldStateList(

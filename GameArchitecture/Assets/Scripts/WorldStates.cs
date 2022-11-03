@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 
 public class WorldState<T>
 {
@@ -70,11 +72,31 @@ public class WorldStateList
     {
         foreach (WorldState<object> condition in requirements.states)
         {
-            if (!states.Contains(condition))
+            WorldState<object> state = FindState(condition.Tag);
+
+            if (state == null)
                 return false;
+
+            return state.Equals(condition);
         }
 
         return true;
+    }
+
+    public void ApplyStateList(WorldStateList list)
+    {
+        foreach (WorldState<object> state in list.states)
+        {
+            ApplyState(state);
+        }
+    }
+
+    public void ApplyState(WorldState<object> state)
+    {
+        WorldState<object> cond = FindState(state.Tag);
+
+        if (cond != null)
+            cond.State = state.State;
     }
 
     public WorldState<object> FindState(string tag)

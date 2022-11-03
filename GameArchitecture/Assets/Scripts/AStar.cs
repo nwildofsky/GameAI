@@ -24,12 +24,12 @@ public class AStar
     {
         if (currentAction.Previous == null)
         {
-            currentAction.ApplyEffects(ref currentState);
+            currentState.ApplyStateList(currentAction.Effects);
             return currentState;
         }
 
         WorldStateList pathState = ApplyPathEffects(currentAction.Previous, currentState);
-        currentAction.ApplyEffects(ref pathState);
+        pathState.ApplyStateList(currentAction.Effects);
         return pathState;
     }
 
