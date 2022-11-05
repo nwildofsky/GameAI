@@ -2,24 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BehaviorDrink : Behavior_Base
+public class BehaviorDrink : Behavior
 {
     GameObject pubLocs;
     GameObject nearestPub;
+    Vector3 nearestPubLoc;
 
     public BehaviorDrink()
     {
         pubLocs = GameObject.Find("Pubs");
-        nearestPub = null;
+        nearestPubLoc = Vector3.zero;
     }
 
     public override void Run(ActionPlanner agent)
     {
-        nearestPub = FindNearestFromChildren(agent, pubLocs.transform);
-
         isRunning = true;
 
-        if (MoveTo(agent, nearestPub, 2))
+        nearestPub = FindNearestFromChildren(agent, pubLocs.transform);
+
+        if (nearestPubLoc == Vector3.zero)
+        {
+            nearestPubLoc = FindLocInBox(nearestPub);
+        }
+
+        if (MoveTo(agent, nearestPubLoc, 2))
         {
             timer += Time.deltaTime;
         }

@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class Goal
 {
-    WorldStateList requisites;
+    protected WorldStateList requisites;
+
+    public Goal()
+    {
+        requisites = new WorldStateList();
+    }
 
     public Goal(WorldStateList requisites)
     {
@@ -14,7 +19,7 @@ public class Goal
     public WorldStateList Requisites
     { get => requisites; }
 
-    public float CalculatePriority(ActionPlanner agent)
+    public virtual float CalculatePriority(ActionPlanner agent)
     {
         return 0;
     }

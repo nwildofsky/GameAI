@@ -4,7 +4,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public abstract class Behavior_Base
+public abstract class Behavior
 {
     protected bool isRunning;
     protected bool isCompleted;
@@ -13,7 +13,7 @@ public abstract class Behavior_Base
     protected float timer = 0;
     protected float timerLength = 2.5f;
 
-    protected Behavior_Base()
+    protected Behavior()
     {
         isRunning = false;
         isCompleted = false;
@@ -35,21 +35,21 @@ public abstract class Behavior_Base
         timer = 0;
     }
 
-    protected bool MoveTo(ActionPlanner agent, GameObject dest, float speed)
+    protected Vector3 FindLocInBox(GameObject box)
     {
-        Mesh destBox = dest.GetComponent<MeshFilter>().mesh;
-        if (destBox != null)
+        if (box.GetComponent<BoxCollider>())
         {
-            float xMin = destBox.bounds.min.x;
-            float xMax = destBox.bounds.max.x;
-            float zMin = destBox.bounds.min.z;
-            float zMax = destBox.bounds.max.z;
+            float xOffset = box.transform.right.x * (box.transform.localScale.x / 2f);
+            float zOffset = box.transform.forward.z * (box.transform.localScale.z / 2f);
+            float xMin = box.transform.position.x - xOffset;
+            float xMax = box.transform.position.x + xOffset;
+            float zMin = box.transform.position.z - zOffset;
+            float zMax = box.transform.position.z + zOffset;
 
-            Vector3 destPos = new Vector3(Random.Range(xMin, xMax), 1, Random.Range(zMin, zMax));
-            return MoveTo(agent, destPos, speed);
+            return new Vector3(Random.Range(xMin, xMax), 1, Random.Range(zMin, zMax));
         }
 
-        return MoveTo(agent, dest.transform.position, speed);
+        return Vector3.zero;
     }
 
     protected bool MoveTo(ActionPlanner agent, Vector3 dest, float speed)
@@ -57,6 +57,7 @@ public abstract class Behavior_Base
         isMoving = true;
 
         Vector3 curPos = agent.transform.position;
+        dest.y = curPos.y;
         Vector3 moveDir = Vector3.Normalize(dest - curPos);
 
         curPos += moveDir * speed * Time.deltaTime;
@@ -84,14 +85,40 @@ public abstract class Behavior_Base
         return false;
     }
 
+    protected bool MoveFrom(ActionPlanner agent, Vector3 targetPos, float speed)
+    {
+        isMoving = true;
+
+        Vector3 curPos = agent.transform.position;
+        targetPos.y = curPos.y;
+        Vector3 moveDir = Vector3.Normalize(curPos - targetPos);
+
+        curPos += moveDir * speed * Time.deltaTime;
+        agent.transform.position = curPos;
+
+        if (!agent.Bumped)
+        {
+            isMoving = false;
+            return true;
+        }
+
+        return false;
+    }
+
     protected Vector3 FindNearestFromChildren(ActionPlanner agent, Transform parent, Vector3 nearest)
     {
         if (nearest == Vector3.zero)
         {
+            nearest = Vector3.positiveInfinity;
             foreach (Transform loc in parent.transform)
             {
-                if (Vector3.Magnitude(loc.position - agent.transform.position) < Vector3.Magnitude(nearest))
-                    nearest = loc.position;
+                if (Vector3.Magnitude(loc.position - agent.transform.position) < Vector3.Magnitude(nearest - agent.transform.position))
+                {
+                    if (loc.position != agent.transform.position)
+                    {
+                        nearest = loc.position;
+                    }
+                }
             }
 
             return nearest;
@@ -102,19 +129,22 @@ public abstract class Behavior_Base
 
     protected GameObject FindNearestFromChildren(ActionPlanner agent, Transform parent)
     {
-        Vector3 nearest = Vector3.zero;
+        Vector3 nearest = Vector3.positiveInfinity;
         GameObject nearestObj = null;
 
         foreach (Transform loc in parent.transform)
         {
-            if (Vector3.Magnitude(loc.position - agent.transform.position) < Vector3.Magnitude(nearest))
+            if (Vector3.Magnitude(loc.position - agent.transform.position) < Vector3.Magnitude(nearest - agent.transform.position))
             {
-                nearest = loc.position;
-                nearestObj = loc.gameObject;
+                if (loc.position != agent.transform.position)
+                {
+                    nearest = loc.position;
+                    nearestObj = loc.gameObject;
+                }
             }
         }
 
-            return nearestObj;
-        }
+
+        return nearestObj;
     }
 }

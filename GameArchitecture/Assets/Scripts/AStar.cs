@@ -43,7 +43,6 @@ public class AStar
             if (worldState.MeetsRequirements(action.Preconditions))
             {
                 astarQueue.Add(action);
-                break;
             }
         }
 
@@ -62,7 +61,7 @@ public class AStar
             for(int i = 0; i < actions.Count; i++)
             {
                 Action action = actions[i].DeepCopy();
-                if (action.Equals(q) || visitedActions.Contains(action))
+                if (action.Equals(q) /*|| visitedActions.Contains(action)*/)
                 {
                     continue;
                 }
@@ -80,7 +79,7 @@ public class AStar
                 }
             }
 
-            visitedActions.Add(q);
+            //visitedActions.Add(q);
         }
 
         return null;

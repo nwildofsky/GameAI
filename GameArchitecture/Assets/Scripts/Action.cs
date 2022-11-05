@@ -8,7 +8,7 @@ public class Action
     WorldStateList preconditions;
     WorldStateList effects;
     int heuristic;
-    Behavior_Base behavior;
+    Behavior behavior;
 
     public Action()
     {
@@ -16,7 +16,7 @@ public class Action
         effects = new WorldStateList();
         heuristic = 0;
     }
-    public Action(WorldStateList preconditions, WorldStateList effects, Behavior_Base behavior, int heuristic = 0)
+    public Action(WorldStateList preconditions, WorldStateList effects, Behavior behavior, int heuristic = 0)
     {
         this.preconditions = preconditions;
         this.effects = effects;
@@ -43,7 +43,7 @@ public class Action
     { get => preconditions; }
     public WorldStateList Effects
     { get => effects; }
-    public Behavior_Base Behavior
+    public Behavior Behavior
     { get => behavior; }
     public int Depth
     { get; set; }

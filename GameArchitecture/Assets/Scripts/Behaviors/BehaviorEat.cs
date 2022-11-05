@@ -2,24 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BehaviorEat : Behavior_Base
+public class BehaviorEat : Behavior
 {
     GameObject diningLocs;
     GameObject nearestDining;
+    Vector3 nearestDiningLoc;
 
     public BehaviorEat()
     {
         diningLocs = GameObject.Find("Diners");
-        nearestDining = null;
+        nearestDiningLoc = Vector3.zero;
     }
 
     public override void Run(ActionPlanner agent)
     {
-        nearestDining = FindNearestFromChildren(agent, diningLocs.transform);
-
         isRunning = true;
 
-        if (MoveTo(agent, nearestDining, 2))
+        nearestDining = FindNearestFromChildren(agent, diningLocs.transform);
+
+        if (nearestDiningLoc == Vector3.zero)
+        {
+            nearestDiningLoc = FindLocInBox(nearestDining);
+        }
+
+        if (MoveTo(agent, nearestDiningLoc, 2))
         {
             timer += Time.deltaTime;
         }

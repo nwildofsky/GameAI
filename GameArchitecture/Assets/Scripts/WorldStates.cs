@@ -77,7 +77,8 @@ public class WorldStateList
             if (state == null)
                 return false;
 
-            return state.Equals(condition);
+            if (!state.Equals(condition))
+                return false;
         }
 
         return true;
