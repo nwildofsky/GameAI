@@ -16,6 +16,7 @@ public class AgentSpawner : MonoBehaviour
         parent = GameObject.Find("Agents");
         BoxCollider box = GetComponent<BoxCollider>();
 
+        // Find the spawn box bounds
         float xOffset = box.center.x + box.size.x / 2f;
         float zOffset = box.center.z + box.size.z / 2f;
         float xMin = transform.position.x - xOffset;
@@ -23,9 +24,10 @@ public class AgentSpawner : MonoBehaviour
         float zMin = transform.position.z - zOffset;
         float zMax = transform.position.z + zOffset;
 
+        // Spawn each agent at a random position within the spawn bounds
         for (int i = 0; i < agentNum; i++)
         {
-            Instantiate(agentToSpawn, new Vector3(Random.Range(xMin, xMax), 1, Random.Range(zMin, zMax)), Quaternion.identity);
+            Instantiate(agentToSpawn, new Vector3(Random.Range(xMin, xMax), 1, Random.Range(zMin, zMax)), Quaternion.identity, parent.transform);
         }
     }
 }

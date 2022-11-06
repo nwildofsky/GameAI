@@ -13,7 +13,7 @@ public class GoalResolveBump : Goal
 
     public override float CalculatePriority(ActionPlanner agent)
     {
-        if ((bool)agent.WorldState.FindState("bumpedInto").State)
+        if (agent.Bumped)
             return 5;
 
         return 0;

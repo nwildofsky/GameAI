@@ -32,7 +32,6 @@ public class BehaviorWork : Behavior
         if (!finishedWork && MoveTo(agent, nearestWorkLoc, 2))
         {
             agent.GetComponent<MeshRenderer>().enabled = false;
-            agent.GetComponent<CapsuleCollider>().enabled = false;
             agent.GetComponent<SphereCollider>().enabled = false;
             timer += Time.deltaTime;
         }
@@ -51,7 +50,6 @@ public class BehaviorWork : Behavior
             timer += Time.deltaTime;
             if (timer >= timerLength)
             {
-                agent.GetComponent<CapsuleCollider>().enabled = true;
                 agent.GetComponent<SphereCollider>().enabled = true;
                 Complete();
             }

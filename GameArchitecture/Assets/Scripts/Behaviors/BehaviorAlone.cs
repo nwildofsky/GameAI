@@ -15,7 +15,11 @@ public class BehaviorAlone : Behavior
     {
         isRunning = true;
 
-        if (MoveFrom(agent, center.transform.position, 2))
+        if (agent.Bumped)
+        {
+            MoveFrom(agent, center.transform.position, 2);
+        }
+        else
         {
             timer += Time.deltaTime;
         }

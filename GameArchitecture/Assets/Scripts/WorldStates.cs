@@ -68,6 +68,7 @@ public class WorldStateList
         return copy;
     }
 
+    // Check if all states in this world state match the inputted list
     public bool MeetsRequirements(WorldStateList requirements)
     {
         foreach (WorldState<object> condition in requirements.states)
@@ -84,6 +85,7 @@ public class WorldStateList
         return true;
     }
 
+    // Apply all the states of the inputted list to this world state
     public void ApplyStateList(WorldStateList list)
     {
         foreach (WorldState<object> state in list.states)
@@ -92,6 +94,7 @@ public class WorldStateList
         }
     }
 
+    // Apply a single state to this world state
     public void ApplyState(WorldState<object> state)
     {
         WorldState<object> cond = FindState(state.Tag);
@@ -100,6 +103,7 @@ public class WorldStateList
             cond.State = state.State;
     }
 
+    // Find a state within this world state given the state's tag
     public WorldState<object> FindState(string tag)
     {
         foreach(WorldState<object> state in states)

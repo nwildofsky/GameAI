@@ -5,7 +5,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(Transform))]
 [RequireComponent(typeof(MeshRenderer))]
-[RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(SphereCollider))]
 public class ActionPlanner : MonoBehaviour
 {
@@ -15,6 +14,9 @@ public class ActionPlanner : MonoBehaviour
 
     // Variables that influence each state
     private bool bumped = false;
+    private bool insideLocation = false;
+    private int bumpMax = 2;
+    private int collisionsToBump;
 
     // Variables for goap action planning
     WorldStateList worldState;
@@ -22,12 +24,19 @@ public class ActionPlanner : MonoBehaviour
     List<Goal> goals;
     List<Action> plan;
     Action runningAction;
+    [SerializeField]
+    string runningActionDebugString = "";
     Goal currentGoal;
 
     public bool Bumped
     { get => bumped; }
     public WorldStateList WorldState
     { get => worldState; }
+
+    private void Awake()
+    {
+        collisionsToBump = bumpMax;
+    }
 
     void Start()
     {
@@ -36,13 +45,14 @@ public class ActionPlanner : MonoBehaviour
         Init();
     }
 
+    // Setup goap variables and lists
     private void Init()
     {
         worldState = new WorldStateList(
             new WorldState<object>("happiness", UnityEngine.Random.Range(0, 4)),
             new WorldState<object>("hunger", UnityEngine.Random.Range(0, 3)),
             new WorldState<object>("money", UnityEngine.Random.Range(0, 3)),
-            new WorldState<object>("bumpedInto", false)
+            new WorldState<object>("bumpedInto", bumped)
         );
 
         actions = new List<Action>();
@@ -52,186 +62,44 @@ public class ActionPlanner : MonoBehaviour
         plan = new List<Action>();
 
         // Eat
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("hunger", 2),
-                new WorldState<object>("money", 1)
-            ),
-            new WorldStateList(
-                new WorldState<object>("hunger", 0),
-                new WorldState<object>("money", 0)
-            ),
-            new BehaviorEat()
-        ));
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("hunger", 2),
-                new WorldState<object>("money", 2)
-            ),
-            new WorldStateList(
-                new WorldState<object>("hunger", 0),
-                new WorldState<object>("money", 1)
-            ),
-            new BehaviorEat()
-        ));
+        actions.Add(new ActionEat());
+        actions.Add(new ActionEatRich());
         // Drink
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("hunger", 1),
-                new WorldState<object>("happiness", 0)
-            ),
-            new WorldStateList(
-                new WorldState<object>("hunger", 0)
-            ),
-            new BehaviorDrink()
-        ));
+        actions.Add(new ActionDrink());
         // Bump Person
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false)
-            ),
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", true)
-            ),
-            new BehaviorBump()
-        ));
+        actions.Add(new ActionBump());
         // Avoid
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", true),
-                new WorldState<object>("happiness", 0)
-            ),
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false)
-            ),
-            new BehaviorAvoid()
-        ));
-        // Avoid 
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", true),
-                new WorldState<object>("happiness", 1)
-            ),
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 0)
-            ),
-            new BehaviorAvoid()
-        ));
+        actions.Add(new ActionAvoidSad());
+        actions.Add(new ActionAvoidAngry());
         // Socialize
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", true),
-                new WorldState<object>("happiness", 2)
-            ),
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 3),
-                new WorldState<object>("hunger", 1)
-            ),
-            new BehaviorSocialize()
-        ));
-        // Socialize
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", true),
-                new WorldState<object>("happiness", 1)
-            ),
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 0)
-            ),
-            new BehaviorSocialize()
-        ));
+        actions.Add(new ActionSocializeHappy());
+        actions.Add(new ActionSocializeHungry());
         // Time Alone
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 0)
-            ),
-            new WorldStateList(
-                new WorldState<object>("happiness", 2),
-                new WorldState<object>("hunger", 1)
-            ),
-            new BehaviorAlone()
-        ));
+        actions.Add(new ActionAlone());
         // Shop
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("money", 2)
-            ),
-            new WorldStateList(
-                new WorldState<object>("money", 0),
-                new WorldState<object>("happiness", 3),
-                new WorldState<object>("hunger", 2)
-            ),
-            new BehaviorShop()
-        ));
-        actions.Add(new Action(
-            new WorldStateList(
-            new WorldState<object>("bumpedInto", false),
-            new WorldState<object>("money", 1)
-        ),
-            new WorldStateList(
-            new WorldState<object>("money", 0),
-            new WorldState<object>("happiness", 2)
-        ),
-            new BehaviorShop()
-        ));
+        actions.Add(new ActionShopRich());
+        actions.Add(new ActionShop());
         // Work
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 0)
-            ),
-            new WorldStateList(
-                new WorldState<object>("money", 1),
-                new WorldState<object>("hunger", 2)
-            ),
-            new BehaviorWork()
-        ));
-        // Work
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 1)
-            ),
-            new WorldStateList(
-                new WorldState<object>("money", 2),
-                new WorldState<object>("happiness", 0),
-                new WorldState<object>("hunger", 1)
-            ),
-            new BehaviorWork()
-        ));
-        // Work
-        actions.Add(new Action(
-            new WorldStateList(
-                new WorldState<object>("bumpedInto", false),
-                new WorldState<object>("happiness", 2)
-            ),
-            new WorldStateList(
-                new WorldState<object>("money", 1),
-                new WorldState<object>("hunger", 2),
-                new WorldState<object>("happiness", 1)
-            ),
-            new BehaviorWork()
-        ));
+        actions.Add(new ActionWorkSad());
+        actions.Add(new ActionWorkEfficient());
+        actions.Add(new ActionWorkHappy());
 
 
         goals.Add(new GoalHappy());
         goals.Add(new GoalRich());
         goals.Add(new GoalNotHungry());
         goals.Add(new GoalSpendMoney());
+        goals.Add(new GoalResolveBump());
 
         RecalculatePlan();
     }
 
+    // Run each action one at a time
+    // On completion apply its effects to the world state, recalculate plan,
+    // and then pop the next action from the plan and start the process over
     private void Update()
     {
+        // While there are more actions left in the plan
         if (plan.Count > 0)
         {
             if (runningAction == null)
@@ -246,6 +114,7 @@ public class ActionPlanner : MonoBehaviour
                 if (runningAction.Behavior.IsCompleted)
                 {
                     worldState.ApplyStateList(runningAction.Effects);
+                    RecalculatePlan();
                     runningAction = plan[0];
                     plan.RemoveAt(0);
 
@@ -257,64 +126,70 @@ public class ActionPlanner : MonoBehaviour
                 }
             }
         }
+        // If this is the last action in the plan
         else if (runningAction != null)
         {
             if (runningAction.Behavior.IsCompleted)
             {
                 worldState.ApplyStateList(runningAction.Effects);
                 runningAction = null;
+                RecalculatePlan();
             }
             else
             {
                 runningAction.Behavior.Run(this);
             }
         }
+        // If the entire plan has been completed
         else
         {
             currentGoal = null;
+            RecalculatePlan();
         }
 
-        RecalculatePlan();
+        // Update the editor with the name of the currently running action
+        if (runningAction != null)
+        {
+            runningActionDebugString = runningAction.GetType().Name;
+        }
     }
 
     private void RecalculatePlan()
     {
+        // Set the current goal to the goal in the list with the highest priority
         foreach (Goal goal in goals)
         {
             if (currentGoal == null)
             {
                 currentGoal = goal;
-                foreach (Action action in actions)
-                {
-                    action.Behavior.IsRunning = false;
-                    action.Behavior.IsCompleted = false;
-                }
-                plan = AStar.PlanAction(worldState, currentGoal, actions);
-                runningAction = null;
-                break;
             }
             else if (goal.CalculatePriority(this) > currentGoal.CalculatePriority(this))
             {
                 currentGoal = goal;
-                foreach (Action action in actions)
-                {
-                    action.Behavior.IsRunning = false;
-                    action.Behavior.IsCompleted = false;
-                }
-                plan = AStar.PlanAction(worldState, currentGoal, actions);
-                runningAction = null;
-                break;
             }
         }
 
+        // Reset all completed actions
+        foreach (Action action in actions)
+        {
+            action.Behavior.IsRunning = false;
+            action.Behavior.IsCompleted = false;
+        }
+        plan = AStar.PlanAction(worldState, currentGoal, actions);
+        runningAction = null;
+
+        // If the A* search could not find a path, there is no path with this current world state
+        // As a quick fix, randomize the world state until a path is found
         if (plan == null)
         {
             worldState = new WorldStateList(
                 new WorldState<object>("happiness", UnityEngine.Random.Range(0, 4)),
                 new WorldState<object>("hunger", UnityEngine.Random.Range(0, 3)),
                 new WorldState<object>("money", UnityEngine.Random.Range(0, 3)),
-                new WorldState<object>("bumpedInto", false)
+                new WorldState<object>("bumpedInto", bumped)
             );
+
+            Debug.Log("No plan could be calculated");
 
             RecalculatePlan();
         }
@@ -322,40 +197,58 @@ public class ActionPlanner : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Collisions with other agents
         if (other.GetType() == typeof(SphereCollider))
         {
             ActionPlanner otherAgent = other.gameObject.GetComponent<ActionPlanner>();
-            if (otherAgent)
+            // Only initiate bumps while moving and outside of a trigger location
+            if (otherAgent && !bumped && !insideLocation && runningAction != null && runningAction.Behavior.IsMoving)
             {
-                bumped = true;
-                otherAgent.bumped = true;
+                // Only initiate bumps every bumpMax amount of times
+                if (collisionsToBump == 0)
+                {
+                    collisionsToBump = bumpMax;
+                    bumped = true;
+                    if (worldState != null)
+                    {
+                        worldState.ApplyState(new WorldState<object>("bumpedInto", true));
+                        RecalculatePlan();
+                    }
+                }
+                else
+                {
+                    collisionsToBump--;
+                }
             }
+        }
+
+        // Collisions with location volumes
+        if (other.GetType() == typeof(BoxCollider) && other.isTrigger)
+        {
+            insideLocation = true;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
+        // Collisions with other agents
         if (other.GetType() == typeof(SphereCollider))
         {
             ActionPlanner otherAgent = other.gameObject.GetComponent<ActionPlanner>();
-            if (otherAgent)
+            if (otherAgent && bumped)
             {
                 bumped = false;
-                otherAgent.bumped = false;
+                if (worldState != null)
+                {
+                    worldState.ApplyState(new WorldState<object>("bumpedInto", false));
+                }
             }
         }
-    }
 
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.GetType() == typeof(SphereCollider))
+        // Collisions with location volumes
+        if (other.GetType() == typeof(BoxCollider) && other.isTrigger)
         {
-            ActionPlanner otherAgent = other.gameObject.GetComponent<ActionPlanner>();
-            if (otherAgent && !bumped)
-            {
-                bumped = true;
-                otherAgent.bumped = true;
-            }
+            insideLocation = false;
         }
     }
 }

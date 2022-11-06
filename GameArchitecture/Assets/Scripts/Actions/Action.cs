@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class Action
 {
-    WorldStateList preconditions;
-    WorldStateList effects;
-    int heuristic;
-    Behavior behavior;
+    protected WorldStateList preconditions;
+    protected WorldStateList effects;
+    protected int heuristic;
+    protected Behavior behavior;
 
     public Action()
     {

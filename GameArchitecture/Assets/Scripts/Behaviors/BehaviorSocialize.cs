@@ -6,26 +6,48 @@ public class BehaviorSocialize : Behavior
 {
     GameObject agentLocs;
     GameObject nearestAgent;
+    bool finishedSocialize;
 
     public BehaviorSocialize()
     {
         agentLocs = GameObject.Find("Agents");
+        nearestAgent = null;
+        finishedSocialize = false;
     }
 
     public override void Run(ActionPlanner agent)
     {
         isRunning = true;
 
-        nearestAgent = FindNearestFromChildren(agent, agentLocs.transform);
-        
+        if (nearestAgent == null)
+        {
+            nearestAgent = FindNearestFromChildren(agent, agentLocs.transform);
+        }
+
         timer += Time.deltaTime;
 
-        if (timer >= timerLength)
+        if (finishedSocialize)
         {
-            if (MoveFrom(agent, nearestAgent.transform.position, 2))
-            {
-                Complete();
-            }
+            MoveFrom(agent, nearestAgent.transform.position, 2);
         }
+
+        if (!finishedSocialize && timer >= timerLength)
+        {
+            finishedSocialize = true;
+            timer = 0;
+            timerLength = 1;
+        }
+
+        if (finishedSocialize && timer >= timerLength)
+        {
+            Complete();
+        }
+    }
+
+    protected override void Complete()
+    {
+        base.Complete();
+        nearestAgent = null;
+        finishedSocialize = false;
     }
 }

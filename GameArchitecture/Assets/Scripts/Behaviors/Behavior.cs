@@ -6,10 +6,13 @@ using UnityEngine.Rendering;
 
 public abstract class Behavior
 {
+    // Behvaior states inherited by all behavior children
     protected bool isRunning;
     protected bool isCompleted;
     protected bool isMoving;
+    // A small value for position checking
     protected float epsilon = 0.1f;
+    // Every behavior has access to a timer
     protected float timer = 0;
     protected float timerLength = 2.5f;
 
@@ -26,8 +29,10 @@ public abstract class Behavior
     public bool IsMoving
     { get => isMoving; }
 
+    // Logic behind each behavior that must be implemented by each
     public abstract void Run(ActionPlanner agent);
 
+    // Signifies the completion of this behavior to the action planner
     protected virtual void Complete()
     {
         isRunning = false;
@@ -35,6 +40,7 @@ public abstract class Behavior
         timer = 0;
     }
 
+    // Find a random position in a box collider given a GameObject
     protected Vector3 FindLocInBox(GameObject box)
     {
         if (box.GetComponent<BoxCollider>())
@@ -52,6 +58,8 @@ public abstract class Behavior
         return Vector3.zero;
     }
 
+    // Move directly to a position specified and lock into place when arrived
+    // Returns true if the agent position has moved into place, false if not
     protected bool MoveTo(ActionPlanner agent, Vector3 dest, float speed)
     {
         isMoving = true;
@@ -85,26 +93,31 @@ public abstract class Behavior
         return false;
     }
 
+    // Move directly away from a specified position
+    // Returns true when the agent is bumping another agent
+    // Returns false and moves when the agent is not bumping
     protected bool MoveFrom(ActionPlanner agent, Vector3 targetPos, float speed)
     {
         isMoving = true;
 
-        Vector3 curPos = agent.transform.position;
-        targetPos.y = curPos.y;
-        Vector3 moveDir = Vector3.Normalize(curPos - targetPos);
-
-        curPos += moveDir * speed * Time.deltaTime;
-        agent.transform.position = curPos;
-
-        if (!agent.Bumped)
+        if (agent.Bumped)
         {
-            isMoving = false;
-            return true;
+            Vector3 curPos = agent.transform.position;
+            targetPos.y = curPos.y;
+            Vector3 moveDir = Vector3.Normalize(curPos - targetPos);
+
+            curPos += moveDir * speed * Time.deltaTime;
+            agent.transform.position = curPos;
+
+            return false;
         }
 
-        return false;
+        isMoving = false;
+        return true;
     }
 
+    // Find the closest positioned object from a list of transforms given by the children of a parent transform
+    // Returns a Vector3 position
     protected Vector3 FindNearestFromChildren(ActionPlanner agent, Transform parent, Vector3 nearest)
     {
         if (nearest == Vector3.zero)
@@ -127,6 +140,8 @@ public abstract class Behavior
         return nearest;
     }
 
+    // Find the closest positioned object from a list of transforms given by the children of a parent transform
+    // Returns the GameObject found
     protected GameObject FindNearestFromChildren(ActionPlanner agent, Transform parent)
     {
         Vector3 nearest = Vector3.positiveInfinity;

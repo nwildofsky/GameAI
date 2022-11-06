@@ -10,6 +10,7 @@ public class BehaviorAvoid : Behavior
     public BehaviorAvoid()
     {
         agentLocs = GameObject.Find("Agents");
+        nearestAgent = null;
         timerLength = 1f;
     }
 
@@ -17,7 +18,10 @@ public class BehaviorAvoid : Behavior
     {
         isRunning = true;
 
-        nearestAgent = FindNearestFromChildren(agent, agentLocs.transform);
+        if (nearestAgent == null)
+        {
+            nearestAgent = FindNearestFromChildren(agent, agentLocs.transform);
+        }
 
         if (MoveFrom(agent, nearestAgent.transform.position, 2))
         {
@@ -28,5 +32,11 @@ public class BehaviorAvoid : Behavior
         {
             Complete();
         }
+    }
+
+    protected override void Complete()
+    {
+        base.Complete();
+        nearestAgent = null;
     }
 }

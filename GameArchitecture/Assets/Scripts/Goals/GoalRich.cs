@@ -15,7 +15,6 @@ public class GoalRich : Goal
     {
         float happinessPercent = (int)agent.WorldState.FindState("happiness").State / 3f;
         float richPercent = (int)agent.WorldState.FindState("money").State / 2f;
-        float hungerPercent = (int)agent.WorldState.FindState("hunger").State / 2f;
 
         return (1 - richPercent) + 0.04f * happinessPercent;
     }
