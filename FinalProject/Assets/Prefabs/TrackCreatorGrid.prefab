@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5880896749183250186}
   - component: {fileID: 5880896749183250190}
   m_Layer: 5
-  m_Name: TrackEditorGrid
+  m_Name: TrackCreatorGrid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -83,7 +83,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &5880896749183250186
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,5 +114,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tile: {fileID: 2956304322672919239, guid: 029a2992c9b8553489d2d0c0f000977e, type: 3}
-  selectedTrackTile: {fileID: 8049907621329533821, guid: 419b5557461398443a4b99d9496015fc, type: 3}
-  tilePlaceRotation: {x: 0, y: 0, z: 0, w: 0}

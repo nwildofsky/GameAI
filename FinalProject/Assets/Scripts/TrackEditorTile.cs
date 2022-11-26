@@ -13,7 +13,7 @@ public class TrackEditorTile : MonoBehaviour
         trackTile = null;
     }
 
-    public void ReplaceTileContents(GameObject content, Quaternion rotation)
+    public void ReplaceTileContents(GameObject content, Quaternion rotation, Vector3 offset)
     {
         if (content != null)
         {
@@ -22,7 +22,14 @@ public class TrackEditorTile : MonoBehaviour
                 Object.Destroy(trackTile);
             }
 
-            trackTile = Instantiate(content, transform.position, rotation);
+            trackTile = Instantiate(content, transform.position + offset, rotation);
+        }
+        else if (content == null)
+        {
+            if (trackTile != null)
+            {
+                Object.Destroy(trackTile);
+            }
         }
     }
 }
