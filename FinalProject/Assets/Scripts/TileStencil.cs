@@ -1,13 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform))]
+[RequireComponent (typeof(Image))]
 public class TileStencil : MonoBehaviour
 {
     public GameObject tile;
     public int width;
     public int height;
+    public Sprite normalSprite;
+    public Sprite selectedSprite;
+    public bool selected = false;
 
     public void Rotate()
     {
@@ -17,5 +22,17 @@ public class TileStencil : MonoBehaviour
         int temp = width;
         width = height;
         height = temp;
+    }
+
+    public void Select()
+    {
+        selected = true;
+        GetComponent<Image>().sprite = selectedSprite;
+    }
+
+    public void Deselect()
+    {
+        selected = false;
+        GetComponent<Image>().sprite = normalSprite;
     }
 }

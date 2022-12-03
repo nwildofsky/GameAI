@@ -123,12 +123,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 5880896749183250190, guid: c7903e5ae668dc7459b2b0655e1adeec, type: 3}
-        m_TargetAssemblyTypeName: TrackEditorGrid, Assembly-CSharp
+        m_TargetAssemblyTypeName: TrackCreatorGrid, Assembly-CSharp
         m_MethodName: HandleTileClick
         m_Mode: 2
         m_Arguments:
           m_ObjectArgument: {fileID: -980386690493669845}
-          m_ObjectArgumentAssemblyTypeName: TrackEditorTile, Assembly-CSharp
+          m_ObjectArgumentAssemblyTypeName: TrackCreatorTile, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
