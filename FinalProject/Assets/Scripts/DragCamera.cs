@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class DragCamera : MonoBehaviour
 {
+    public float minSize;
+    public float maxSize;
     public float dragSpeed;
     public float scrollSpeed;
     Vector3 mousePos;
@@ -41,7 +43,11 @@ public class DragCamera : MonoBehaviour
             dragDir = Vector3.Normalize(dragDir);
             dragDir.x *= Mathf.Abs(mouseDelta.x);
             dragDir.z *= Mathf.Abs(mouseDelta.y);
-            dragDir *= dragSpeed;
+
+            float zoomPercent = (GetComponent<Camera>().orthographicSize - minSize) / (maxSize - minSize);
+            zoomPercent = Mathf.Max(zoomPercent, 0.1f);
+            dragDir *= dragSpeed * zoomPercent;
+            
             transform.position += dragDir;
         }
         mousePos = Input.mousePosition;
@@ -49,12 +55,12 @@ public class DragCamera : MonoBehaviour
         if (Input.mouseScrollDelta.y > 0)
         {
             GetComponent<Camera>().orthographicSize -= scrollSpeed;
-            GetComponent<Camera>().orthographicSize = Mathf.Max(GetComponent<Camera>().orthographicSize, 30);
+            GetComponent<Camera>().orthographicSize = Mathf.Max(GetComponent<Camera>().orthographicSize, minSize);
         }
         else if (Input.mouseScrollDelta.y < 0)
         {
             GetComponent<Camera>().orthographicSize += scrollSpeed;
-            GetComponent<Camera>().orthographicSize = Mathf.Min(GetComponent<Camera>().orthographicSize, 90);
+            GetComponent<Camera>().orthographicSize = Mathf.Min(GetComponent<Camera>().orthographicSize, maxSize);
         }
     }
 }
