@@ -22,20 +22,36 @@ public class AgentChromosomeData
     public AgentChromosomeData(InputData data, AgentChromosomeData left = null, AgentChromosomeData right = null, AgentChromosomeData parent = null)
     {
         this.data = data;
-        
-        this.left = left;
-        if (this.left != null)
-            this.left.parent = this;
+        //this.size = size;
 
-        this.right = right;
-        if (this.right != null)
-            this.right.parent = this;
+        this.Left = left;
+        //if (this.left != null)
+        //    this.left.parent = this;
+
+        this.Right = right;
+        //if (this.right != null)
+        //    this.right.parent = this;
     }
 
     public InputData data;
+    int size;
     private AgentChromosomeData left;
     private AgentChromosomeData right;
     private AgentChromosomeData parent;
+
+    public int Size
+    {
+        get => size;
+        set
+        {
+            this.size = value;
+
+            if (this.parent != null)
+            {
+                this.parent.Size = 1 + this.size;
+            }
+        }
+    }
 
     public AgentChromosomeData Left
     {
@@ -43,8 +59,20 @@ public class AgentChromosomeData
         set
         {
             this.left = value;
+            this.size = 1;
+
             if (this.left != null)
+            {
                 this.left.parent = this;
+                this.size += this.left.size;
+            }
+
+            if (this.right != null)
+            {
+                this.size += this.right.size;
+            }
+
+            this.Size = this.size;
         }
     }
 
@@ -54,8 +82,20 @@ public class AgentChromosomeData
         set
         {
             this.right = value;
+            this.size = 1;
+
             if (this.right != null)
+            {
                 this.right.parent = this;
+                this.size += this.right.size;
+            }
+
+            if (this.left != null)
+            {
+                this.size += this.left.size;
+            }
+
+            this.Size = this.size;
         }
     }
 
@@ -67,6 +107,12 @@ public class AgentChromosomeData
 
     public AgentChromosomeData DeepCopy()
     {
-        return new AgentChromosomeData(data, left.DeepCopy(), right.DeepCopy(), parent.DeepCopy());
+        AgentChromosomeData root = new AgentChromosomeData(data);
+
+        root.parent = parent;
+        root.Left = left != null ? left.DeepCopy() : null;
+        root.Right = right != null ? right.DeepCopy() : null;
+
+        return root;
     }
 }

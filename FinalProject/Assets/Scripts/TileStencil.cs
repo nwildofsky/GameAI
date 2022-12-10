@@ -16,7 +16,7 @@ public class TileStencil : MonoBehaviour
 
     public void Rotate()
     {
-        float newRot = GetComponent<RectTransform>().rotation.eulerAngles.z - 90;
+        float newRot = GetComponent<RectTransform>().rotation.eulerAngles.z + 90;
         GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, newRot);
 
         int temp = width;

@@ -7,6 +7,7 @@ public class DragCamera : MonoBehaviour
     public float minSize;
     public float maxSize;
     public float dragSpeed;
+    public float minDragSpeed;
     public float scrollSpeed;
     Vector3 mousePos;
 
@@ -45,7 +46,7 @@ public class DragCamera : MonoBehaviour
             dragDir.z *= Mathf.Abs(mouseDelta.y);
 
             float zoomPercent = (GetComponent<Camera>().orthographicSize - minSize) / (maxSize - minSize);
-            zoomPercent = Mathf.Max(zoomPercent, 0.1f);
+            zoomPercent = Mathf.Max(zoomPercent, minDragSpeed);
             dragDir *= dragSpeed * zoomPercent;
             
             transform.position += dragDir;

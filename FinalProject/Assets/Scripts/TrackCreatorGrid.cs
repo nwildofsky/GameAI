@@ -203,7 +203,7 @@ public class TrackCreatorGrid : MonoBehaviour
 
     public void RotateStencils()
     {
-        float newRot = tilePlaceRotation.eulerAngles.y + 90;
+        float newRot = tilePlaceRotation.eulerAngles.y - 90;
         tilePlaceRotation = Quaternion.Euler(0, newRot, 0);
 
         TileStencil[] allStencils = GameObject.FindObjectsOfType<TileStencil>();

@@ -6,6 +6,9 @@ TagManager:
   tags:
   - DefaultStencil
   - TrackStart
+  - FinishLine
+  - GenerationText
+  - TimeScaleText
   layers:
   - Default
   - TransparentFX
@@ -14,8 +17,8 @@ TagManager:
   - Water
   - UI
   - AIAgent
-  - 
-  - 
+  - OutOfBounds
+  - InsideTrack
   - 
   - 
   - 

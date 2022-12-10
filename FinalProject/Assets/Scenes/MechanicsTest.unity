@@ -311,7 +311,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minSize: 5
   maxSize: 60
-  dragSpeed: 0.2
+  dragSpeed: 0.3
+  minDragSpeed: 0.12
   scrollSpeed: 1
 --- !u!81 &2065844928
 AudioListener:
