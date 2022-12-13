@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// UI element that represents a GameObject Tile that will
+// be placed into the level with this stencil selected
 [RequireComponent(typeof(RectTransform))]
 [RequireComponent (typeof(Image))]
 public class TileStencil : MonoBehaviour

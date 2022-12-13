@@ -7,21 +7,20 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class RacerAgent : MonoBehaviour
 {
+    // Public variables that determine how the driving and turning actions are performed
     public float driveForce;
     public float turnSpeed;
     public float maxSpeed;
 
     Rigidbody rigidbody;
-    Vector3 moveDirection;
-    float timeStep;
 
-    int horizontalInput;
-    int verticalInput;
-
+    // Variables representing this agent's chromosome in different ways
     AgentChromosomeData chromosomeData;
     List<AgentChromosomeData> chromosomeList;
     IEnumerator chromosome;
-    //int chromosomeSize;
+
+    // Variables that store data while each generation of the simulation is running
+    // for fitness evaluation and generation sequencing
     float fitness;
     bool insideBounds;
     float insideBoundsTime;
@@ -29,10 +28,13 @@ public class RacerAgent : MonoBehaviour
     float avgSpeed;
     float maxSpeedInSimulation;
     List<GameObject> visitedTiles;
+    Vector3 lastTileLocation;
+
     bool completedActions;
     bool exitedStart;
     bool completedTrack;
 
+    // Public getters and setters for this agent's data
     public AgentChromosomeData ChromosomeData
     {
         get => chromosomeData;
@@ -47,12 +49,6 @@ public class RacerAgent : MonoBehaviour
     {
         get => chromosomeList;
     }
-
-    //public int ChromosomeSize
-    //{
-    //    get => chromosomeSize;
-    //    set => chromosomeSize = value;
-    //}
 
     public float Fitness
     {
@@ -85,6 +81,14 @@ public class RacerAgent : MonoBehaviour
         get => visitedTiles.Count;
     }
 
+    public float DistanceFromLastTile
+    {
+        get
+        {
+            return (insideBounds ? 0 : 1) * Vector3.Distance(transform.position, lastTileLocation);
+        }
+    }
+
     public bool CompletedActions
     {
         get => completedActions;
@@ -96,11 +100,11 @@ public class RacerAgent : MonoBehaviour
         get => completedTrack;
     }
 
-    // Start is called before the first frame update
+    // Awake is used so this is called before the simulation Start
     void Awake()
     {
+        // Set all data values to their defaults
         rigidbody = GetComponent<Rigidbody>();
-        //chromosomeSize = 0;
         fitness = 0;
         insideBounds = false;
         insideBoundsTime = 0.0f;
@@ -108,64 +112,16 @@ public class RacerAgent : MonoBehaviour
         avgSpeed = 0.0f;
         maxSpeedInSimulation = 0.0f;
         visitedTiles = new List<GameObject>();
+        lastTileLocation = Vector3.zero;
         completedActions = false;
         exitedStart = false;
         completedTrack = false;
-
-        //timeStep = 1 / 60f;
-
-        //chromosomeData = new AgentChromosomeData(new InputData(2, 1, 0),
-        //    new AgentChromosomeData(new InputData(0.5f, 0, 1),
-        //        new AgentChromosomeData(new InputData(1, 0, 1), null, null),
-        //        new AgentChromosomeData(new InputData(0.5f, 0, -1),
-        //            new AgentChromosomeData(new InputData(1, 0, 0), null, null),
-        //            null),
-        //        chromosomeData),
-        //    new AgentChromosomeData(new InputData(0.5f, 1, 0), null, null, chromosomeData));
-
-        //chromosome = BuildChromosome(chromosomeData);
-
-        //StartCoroutine(chromosome);
-
-        //StartCoroutine(DriveAndTurnFor(2, 1, 0, null));
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-
-        //horizontalInput = 0;
-        //verticalInput = 0;
-
-        //if (Input.GetKey(KeyCode.W))
-        //{
-        //    verticalInput = 1;
-        //}
-
-        //if (Input.GetKey(KeyCode.A))
-        //{
-        //    horizontalInput--;
-        //}
-        //if (Input.GetKey(KeyCode.D))
-        //{
-        //    horizontalInput++;
-        //}
-
-        //if (Input.GetKeyDown(KeyCode.T))
-        //{
-        //    Time.timeScale *= 2;
-        //}
-        //if (Input.GetKeyDown(KeyCode.R))
-        //{
-        //    Time.timeScale /= 2;
-        //}
-    }
-
+    // Fixed update is used to carry out this agent's actions so that the time scale can be manipulated during the simulation
     private void FixedUpdate()
     {
-        //DriveAndTurn(verticalInput, horizontalInput);
-
+        // Clamp this agent's speed to its max speed
         Vector3 rawVelocity = new Vector3(rigidbody.velocity.x, 0, rigidbody.velocity.z);
         if (rawVelocity.magnitude > maxSpeed)
         {
@@ -173,24 +129,27 @@ public class RacerAgent : MonoBehaviour
             rigidbody.velocity = new Vector3(clampedVelocity.x, rigidbody.velocity.y, clampedVelocity.z);
         }
 
+        // While this agent's chromosome is still running
         if (!completedActions)
         {
+            // Calculate how much time this agent is inside the track bounds and how much it is outside track bounds
             if (insideBounds)
             {
-                insideBoundsTime += Time.fixedDeltaTime;
+                insideBoundsTime += Time.fixedUnscaledDeltaTime;
             }
             else
             {
-                outOfBoundsTime += Time.fixedDeltaTime;
+                outOfBoundsTime += Time.fixedUnscaledDeltaTime;
             }
 
-            // A relative average speed
+            // Calculate a relative average speed
             // Faster agents will still end up with higher speeds but to avoid
             // making this float too high we will multiply it by the deltaTime
-            avgSpeed += rigidbody.velocity.magnitude * Time.fixedDeltaTime;
-            maxSpeedInSimulation += maxSpeed * Time.fixedDeltaTime;
+            avgSpeed += rigidbody.velocity.magnitude * Time.fixedUnscaledDeltaTime;
+            maxSpeedInSimulation += maxSpeed * Time.fixedUnscaledDeltaTime;
         }
 
+        // Once this agent has passed the finished line, stop all of its actions
         if (completedTrack)
         {
             StopAllCoroutines();
@@ -204,8 +163,12 @@ public class RacerAgent : MonoBehaviour
         if (other.gameObject.layer == 8)
         {
             if (!insideBounds)
+            {
                 insideBounds = true;
+                lastTileLocation = other.transform.position;
+            }
 
+            // Add this tile to the list if this agent has not collided with it this generation
             if (!visitedTiles.Contains(other.gameObject) && !completedTrack)
             {
                 visitedTiles.Add(other.gameObject);
@@ -219,6 +182,7 @@ public class RacerAgent : MonoBehaviour
         if (other.gameObject.layer == 8 && !insideBounds)
         {
             insideBounds = true;
+            lastTileLocation = other.transform.position;
         }
     }
 
@@ -228,8 +192,11 @@ public class RacerAgent : MonoBehaviour
         if (other.gameObject.layer == 8 && insideBounds)
         {
             insideBounds = false;
+            lastTileLocation = other.transform.position;
         }
 
+        // Each agent starts inside of the finish line collider, so it must first leave the collider,
+        // then when it exits the same collider again, that means that it has passed the finish line
         if (other.tag == "FinishLine")
         {
             if (!exitedStart)
@@ -254,58 +221,21 @@ public class RacerAgent : MonoBehaviour
         avgSpeed = 0.0f;
         maxSpeedInSimulation = 0.0f;
         visitedTiles = new List<GameObject>();
+        lastTileLocation = Vector3.zero;
         completedActions = false;
         exitedStart = false;
         completedTrack = false;
     }
 
     // Take the tree based structure AgentChromosomeData and condense it into a linked list of Coroutine actions by preorder
-    IEnumerator BuildChromosome(AgentChromosomeData root /*, AgentChromosomeData prevNode = null*/)
+    IEnumerator BuildChromosome(AgentChromosomeData root)
     {
         chromosomeList = new List<AgentChromosomeData>();
         MakeChromosomeList(root, chromosomeList);
         return MakeChromosomeFromList(chromosomeList);
-
-        //if (node == null)
-        //{
-        //    return null;
-        //}
-
-        //if (node.Left != null)
-        //{
-        //    return DriveAndTurnFor(node.data.duration, node.data.movement, node.data.turnDirection, BuildChromosome(node.Left, node));
-        //}
-        //else if (node.Right != null)
-        //{
-        //    return DriveAndTurnFor(node.data.duration, node.data.movement, node.data.turnDirection, BuildChromosome(node.Right, node));
-        //}
-        //else if (prevNode != null)
-        //{
-        //    //if (prevNode.right != node && prevNode.right != null)
-        //    //{
-        //    //    return DriveAndTurnFor(node.data.duration, node.data.movement, node.data.turnDirection, BuildChromosome(prevNode.right, prevNode));
-        //    //}
-        //    //else if (prevNode.parent != null)
-        //    //{
-        //    //    return DriveAndTurnFor(node.data.duration, node.data.movement, node.data.turnDirection, BuildChromosome(prevNode.parent.right, prevNode.parent));
-        //    //}
-
-        //    AgentChromosomeData x = prevNode;
-        //    AgentChromosomeData y = node;
-        //    while ((x.Right == y || x.Right == null) && x.Parent != null)
-        //    {
-        //        x = x.Parent;
-        //        y = y.Parent;
-        //    }
-        //    if (x.Right != y && x.Right != null)
-        //    {
-        //        return DriveAndTurnFor(node.data.duration, node.data.movement, node.data.turnDirection, BuildChromosome(x.Right, x));
-        //    }
-        //}
-
-        //return DriveAndTurnFor(node.data.duration, node.data.movement, node.data.turnDirection, null);
     }
 
+    // Traverse the passed in tree structure by preorder and create a list out of its values
     void MakeChromosomeList(AgentChromosomeData root, List<AgentChromosomeData> list)
     {
         if (root != null)
@@ -317,6 +247,9 @@ public class RacerAgent : MonoBehaviour
         }
     }
 
+    // Turn a list of Chromosome Data into an actual usable chromosome
+    // Coroutines are used because they are functions that can be stored as a value and called continuously for a certain amount of time
+    // Each coroutine action has a reference to the next so they are all called one after another
     IEnumerator MakeChromosomeFromList(List<AgentChromosomeData> list, int index = 0)
     {
         if (index == list.Count - 1)
@@ -327,41 +260,49 @@ public class RacerAgent : MonoBehaviour
         return DriveAndTurnFor(list[index].data.duration, list[index].data.movement, list[index].data.turnDirection, MakeChromosomeFromList(list, index + 1));
     }
 
+    // Start the coroutine list that carries out the actions defined by its chromosome
     public void Run()
     {
         chromosome = BuildChromosome(chromosomeData);
         StartCoroutine(chromosome);
     }
 
+    // Simple force based movement in the forward direction based on this agent's transform
     void Drive(int inputMovement)
     {
-        rigidbody.AddForce(transform.forward * driveForce * Mathf.Sign(inputMovement) * Time.deltaTime, ForceMode.Force);
+        rigidbody.AddForce(transform.forward * driveForce * inputMovement * Time.deltaTime, ForceMode.Force);
     }
 
+    // Rotate this agent either clockwise or counterclockwise depending on the input
     void Turn(int inputDirection)
     {
         Vector3 newOrientation = Quaternion.Euler(0, inputDirection * turnSpeed * Time.deltaTime, 0) * transform.forward;
         transform.rotation = Quaternion.LookRotation(newOrientation, Vector3.up);
     }
 
+    // By taking in both inputs required, this function calls both Turn and then Drive
     void DriveAndTurn(int moveInput, int turnDirection)
     {
         Turn(turnDirection);
         Drive(moveInput);
     }
 
+    // The coroutine that makes up this agent's chromosome
     public IEnumerator DriveAndTurnFor(float duration, int inputMovement, int inputDirection, IEnumerator next)
     {
+        // For the entire duration specified, call DriveAndTurn each FixedUpdate()
         for (float time = 0f; time < duration; time += Time.fixedDeltaTime)
         {
             DriveAndTurn(inputMovement, inputDirection);
             yield return new WaitForFixedUpdate();
         }
 
+        // When the duration is over, call the next action in the chromosome
         if (next != null)
         {
             StartCoroutine(next);
         }
+        // If there is no next action, then this agent has completed its chromosome
         else
         {
             completedActions = true;

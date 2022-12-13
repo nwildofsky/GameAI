@@ -384,9 +384,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minSize: 30
   maxSize: 90
-  dragSpeed: 0.3
-  minDragSpeed: 0.12
-  scrollSpeed: 1
+  dragSpeed: 0.32
+  minDragSpeed: 0.2
+  scrollSpeed: 2
 --- !u!1 &2127162745
 GameObject:
   m_ObjectHideFlags: 0

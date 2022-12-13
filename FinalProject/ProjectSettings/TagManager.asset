@@ -9,6 +9,7 @@ TagManager:
   - FinishLine
   - GenerationText
   - TimeScaleText
+  - PopulationText
   layers:
   - Default
   - TransparentFX

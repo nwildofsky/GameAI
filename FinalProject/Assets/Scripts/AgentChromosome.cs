@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+// A struct that represents all the data required for a single Coroutine action of the agent
 public struct InputData
 {
     public InputData(float duration, int movement, int turnDirection)
@@ -17,20 +18,17 @@ public struct InputData
     public int turnDirection;
 }
 
+// A data structure that represents the data required to make a chromosome for the agent
+// This is a binary tree that is traversed using preorder
 public class AgentChromosomeData
 {
     public AgentChromosomeData(InputData data, AgentChromosomeData left = null, AgentChromosomeData right = null, AgentChromosomeData parent = null)
     {
         this.data = data;
-        //this.size = size;
 
+        // Call the advanced set functions that recursively set up every relevant part of the tree
         this.Left = left;
-        //if (this.left != null)
-        //    this.left.parent = this;
-
         this.Right = right;
-        //if (this.right != null)
-        //    this.right.parent = this;
     }
 
     public InputData data;
@@ -42,6 +40,7 @@ public class AgentChromosomeData
     public int Size
     {
         get => size;
+        // Set this node's size and change the size of all of its parents accordingly
         set
         {
             this.size = value;
@@ -56,6 +55,8 @@ public class AgentChromosomeData
     public AgentChromosomeData Left
     {
         get => this.left;
+        // Set this node's left leaf and set that leaf's parent to this node
+        // Also replace the size of this node and all parents with the new size
         set
         {
             this.left = value;
@@ -79,6 +80,8 @@ public class AgentChromosomeData
     public AgentChromosomeData Right
     {
         get => this.right;
+        // Set this node's right leaf and set that leaf's parent to this node
+        // Also replace the size of this node and all parents with the new size
         set
         {
             this.right = value;
@@ -105,11 +108,13 @@ public class AgentChromosomeData
         set => this.parent = value;
     }
 
+    // This is a way get this node by value instead of by reference
     public AgentChromosomeData DeepCopy()
     {
         AgentChromosomeData root = new AgentChromosomeData(data);
 
         root.parent = parent;
+        // Make sure to also copy by value everything from each leaf node as well
         root.Left = left != null ? left.DeepCopy() : null;
         root.Right = right != null ? right.DeepCopy() : null;
 

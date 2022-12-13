@@ -14,6 +14,8 @@ public class StartSimulationButton : MonoBehaviour
     void Start()
     {
         GetComponent<Button>().interactable = false;
+
+        // Make sure the track created transfers over to the simulation scene
         track = GameObject.Find("Racetrack").transform;
         DontDestroyOnLoad(track);
     }

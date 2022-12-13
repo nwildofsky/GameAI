@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+// Manager script for the Track Creator Scene
+// Creates a grid of tile spaces that can be filled in with Tile Stencils
 [RequireComponent(typeof(Canvas))]
 [RequireComponent(typeof(RectTransform))]
 public class TrackCreatorGrid : MonoBehaviour
@@ -33,14 +35,17 @@ public class TrackCreatorGrid : MonoBehaviour
         hudRaycaster = GameObject.Find("TrackCreatorHUD").GetComponent<GraphicRaycaster>();
         eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
 
+        // Create the grid of empty tiles
         grid = new List<Transform>();
         tileSize = (int)tile.GetComponent<RectTransform>().rect.width;
         RectTransform canvas = GetComponent<RectTransform>();
 
+        // Size the grid to an even square based on the size of the tiles used
         width = (int)canvas.rect.width / tileSize * tileSize;
         height = (int)canvas.rect.height / tileSize * tileSize;
         canvas.sizeDelta = new Vector2(width, height);
 
+        // Instantiate each empty tile
         for (int i = 0; i < height; i += tileSize)
         {
             for (int j = 0; j < width; j += tileSize)
@@ -57,6 +62,8 @@ public class TrackCreatorGrid : MonoBehaviour
         }
     }
 
+    // Update handles the highlighting of each empty tile when the user is hovering it
+    // Adjacent tiles are highlighted as well if the tile stencil will also fill those tiles
     private void Update()
     {
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -182,6 +189,7 @@ public class TrackCreatorGrid : MonoBehaviour
         }
     }
 
+    // Functions that will be called from the HUD elements in the Track Creator scene
     public void HandleTileClick(TrackCreatorTile tile)
     {
         tile.ReplaceTileContents(selectedStencil.tile, tilePlaceRotation, tilePlaceOffset);
